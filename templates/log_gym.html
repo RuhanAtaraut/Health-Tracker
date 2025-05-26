@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+
+{% block title %}Log Gym - Health Tracker{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0"><i class="fas fa-dumbbell me-2"></i>Log Gym Session</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="date" class="form-label">Date</label>
+                            <input type="date" class="form-control" id="date" name="date" value="{{ today }}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="attended" class="form-label">Did you go to the gym?</label>
+                            <select class="form-control" id="attended" name="attended" required onchange="toggleWorkoutFields()">
+                                <option value="">Select...</option>
+                                <option value="true">✅ Yes, I went!</option>
+                                <option value="false">❌ No, I missed it</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div id="workout-details" style="display: none;">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="workout_type" class="form-label">Workout Type</label>
+                                <select class="form-control" id="workout_type" name="workout_type">
+                                    <option value="">Select workout type...</option>
+                                    <option value="Cardio">🏃 Cardio</option>
+                                    <option value="Strength Training">💪 Strength Training</option>
+                                    <option value="CrossFit">🏋️ CrossFit</option>
+                                    <option value="Yoga">🧘 Yoga</option>
+                                    <option value="Swimming">🏊 Swimming</option>
+                                    <option value="Cycling">🚴 Cycling</option>
+                                    <option value="Mixed Training">🔄 Mixed Training</option>
+                                    <option value="Sports">⚽ Sports</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="duration" class="form-label">Duration (minutes)</label>
+                                <input type="number" class="form-control" id="duration" name="duration" 
+                                       min="1" max="300" placeholder="e.g., 60">
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="calories" class="form-label">Calories Burned (estimate)</label>
+                                <input type="number" class="form-control" id="calories" name="calories" 
+                                       min="1" max="2000" placeholder="e.g., 300">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="notes" class="form-label">Notes</label>
+                        <textarea class="form-control" id="notes" name="notes" rows="3" 
+                                  placeholder="How was your workout? What exercises did you do? How are you feeling?"></textarea>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary me-md-2">Cancel</a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i>Save Gym Session
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Workout Benefits</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-success">Physical Benefits:</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-heart text-danger me-2"></i>Improved cardiovascular health</li>
+                            <li><i class="fas fa-weight text-primary me-2"></i>Better weight management</li>
+                            <li><i class="fas fa-bone text-warning me-2"></i>Stronger bones and muscles</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-info">Mental Benefits:</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-smile text-success me-2"></i>Improved mood</li>
+                            <li><i class="fas fa-brain text-purple me-2"></i>Better cognitive function</li>
+                            <li><i class="fas fa-bed text-primary me-2"></i>Enhanced sleep quality</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function toggleWorkoutFields() {
+    const attended = document.getElementById('attended').value;
+    const workoutDetails = document.getElementById('workout-details');
+    
+    if (attended === 'true') {
+        workoutDetails.style.display = 'block';
+        // Make workout type required when attended
+        document.getElementById('workout_type').required = false; // Optional for flexibility
+    } else {
+        workoutDetails.style.display = 'none';
+        // Clear the fields when not attended
+        document.getElementById('workout_type').value = '';
+        document.getElementById('duration').value = '';
+        document.getElementById('calories').value = '';
+        document.getElementById('workout_type').required = false;
+    }
+}
+
+// Estimate calories based on workout type and duration
+document.addEventListener('DOMContentLoaded', function() {
+    const workoutType = document.getElementById('workout_type');
+    const duration = document.getElementById('duration');
+    const calories = document.getElementById('calories');
+    
+    function estimateCalories() {
+        if (workoutType.value && duration.value) {
+            const mins = parseInt(duration.value);
+            let caloriesPerMin = 5; // Default
+            
+            switch(workoutType.value) {
+                case 'Cardio':
+                    caloriesPerMin = 8;
+                    break;
+                case 'Strength Training':
+                    caloriesPerMin = 6;
+                    break;
+                case 'CrossFit':
+                    caloriesPerMin = 10;
+                    break;
+                case 'Yoga':
+                    caloriesPerMin = 3;
+                    break;
+                case 'Swimming':
+                    caloriesPerMin = 9;
+                    break;
+                case 'Cycling':
+                    caloriesPerMin = 7;
+                    break;
+                case 'Mixed Training':
+                    caloriesPerMin = 7;
+                    break;
+                case 'Sports':
+                    caloriesPerMin = 8;
+                    break;
+            }
+            
+            const estimated = Math.round(mins * caloriesPerMin);
+            if (!calories.value || calories.value == 0) {
+                calories.value = estimated;
+                calories.placeholder = `Estimated: ${estimated}`;
+            }
+        }
+    }
+    
+    workoutType.addEventListener('change', estimateCalories);
+    duration.addEventListener('input', estimateCalories);
+});
+</script>
+{% endblock %}

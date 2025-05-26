@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block title %}Log Sleep - Health Tracker{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0"><i class="fas fa-bed me-2"></i>Log Sleep Data</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="date" class="form-label">Date</label>
+                            <input type="date" class="form-control" id="date" name="date" value="{{ today }}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="sleep_quality" class="form-label">Sleep Quality (1-10)</label>
+                            <select class="form-control" id="sleep_quality" name="sleep_quality">
+                                <option value="">Not specified</option>
+                                {% for i in range(1, 11) %}
+                                <option value="{{ i }}">{{ i }} {% if i <= 3 %}😴 Poor{% elif i <= 6 %}😐 Fair{% elif i <= 8 %}😊 Good{% else %}😍 Excellent{% endif %}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="bedtime" class="form-label">Bedtime</label>
+                            <input type="time" class="form-control" id="bedtime" name="bedtime" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="wake_time" class="form-label">Wake Time</label>
+                            <input type="time" class="form-control" id="wake_time" name="wake_time" required>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="notes" class="form-label">Notes (optional)</label>
+                        <textarea class="form-control" id="notes" name="notes" rows="3" 
+                                  placeholder="How did you sleep? Any factors affecting your sleep..."></textarea>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary me-md-2">Cancel</a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i>Save Sleep Data
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Sleep Tips</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li class="mb-2"><i class="fas fa-moon text-primary me-2"></i>Aim for 7-9 hours of sleep per night</li>
+                    <li class="mb-2"><i class="fas fa-clock text-primary me-2"></i>Try to keep consistent sleep and wake times</li>
+                    <li class="mb-2"><i class="fas fa-mobile-alt text-primary me-2"></i>Avoid screens 1 hour before bedtime</li>
+                    <li class="mb-2"><i class="fas fa-thermometer-half text-primary me-2"></i>Keep your bedroom cool and dark</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Calculate and display estimated sleep duration as user types
+document.addEventListener('DOMContentLoaded', function() {
+    const bedtimeInput = document.getElementById('bedtime');
+    const waketimeInput = document.getElementById('wake_time');
+    
+    function updateSleepDuration() {
+        if (bedtimeInput.value && waketimeInput.value) {
+            const bedtime = new Date('1970-01-01T' + bedtimeInput.value + ':00');
+            let waketime = new Date('1970-01-01T' + waketimeInput.value + ':00');
+            
+            // Handle wake time being next day
+            if (waketime <= bedtime) {
+                waketime.setDate(waketime.getDate() + 1);
+            }
+            
+            const duration = (waketime - bedtime) / (1000 * 60 * 60);
+            
+            // Show duration estimate
+            let durationText = document.getElementById('duration-estimate');
+            if (!durationText) {
+                durationText = document.createElement('small');
+                durationText.id = 'duration-estimate';
+                durationText.className = 'text-muted';
+                waketimeInput.parentNode.appendChild(durationText);
+            }
+            
+            durationText.textContent = `Estimated sleep duration: ${duration.toFixed(1)} hours`;
+            
+            // Color code based on recommended sleep
+            if (duration < 6) {
+                durationText.className = 'text-danger';
+            } else if (duration >= 7 && duration <= 9) {
+                durationText.className = 'text-success';
+            } else {
+                durationText.className = 'text-warning';
+            }
+        }
+    }
+    
+    bedtimeInput.addEventListener('change', updateSleepDuration);
+    waketimeInput.addEventListener('change', updateSleepDuration);
+});
+</script>
+{% endblock %}

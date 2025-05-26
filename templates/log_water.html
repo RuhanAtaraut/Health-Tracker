@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+
+{% block title %}Log Water - Health Tracker{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <!-- Current Progress Card -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-tint me-2"></i>Today's Water Progress</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Current: {{ today_total }}ml</span>
+                    <span>Goal: {{ water_goal }}ml</span>
+                </div>
+                {% set progress_percent = (today_total / water_goal * 100) if water_goal > 0 else 0 %}
+                <div class="progress mb-2">
+                    <div class="progress-bar bg-info" role="progressbar" style="width: {{ progress_percent }}%">
+                        {{ "%.0f"|format(progress_percent) }}%
+                    </div>
+                </div>
+                <small class="text-muted">
+                    Remaining: {{ water_goal - today_total }}ml
+                    {% if progress_percent >= 100 %}
+                        🎉 Goal achieved!
+                    {% elif progress_percent >= 75 %}
+                        💪 Almost there!
+                    {% elif progress_percent >= 50 %}
+                        👍 Good progress!
+                    {% else %}
+                        📈 Keep going!
+                    {% endif %}
+                </small>
+            </div>
+        </div>
+
+        <!-- Quick Log Buttons -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-bolt me-2"></i>Quick Log</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-6 col-md-3 mb-2">
+                        <button class="btn btn-outline-primary w-100" onclick="quickLog(250)">
+                            🥤 250ml<br><small>Glass</small>
+                        </button>
+                    </div>
+                    <div class="col-6 col-md-3 mb-2">
+                        <button class="btn btn-outline-primary w-100" onclick="quickLog(500)">
+                            🍶 500ml<br><small>Bottle</small>
+                        </button>
+                    </div>
+                    <div class="col-6 col-md-3 mb-2">
+                        <button class="btn btn-outline-primary w-100" onclick="quickLog(750)">
+                            🏺 750ml<br><small>Large Bottle</small>
+                        </button>
+                    </div>
+                    <div class="col-6 col-md-3 mb-2">
+                        <button class="btn btn-outline-primary w-100" onclick="quickLog(1000)">
+                            💧 1000ml<br><small>Liter</small>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Manual Log Form -->
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0"><i class="fas fa-edit me-2"></i>Manual Log</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="amount" class="form-label">Amount (ml)</label>
+                            <input type="number" class="form-control" id="amount" name="amount" 
+                                   min="1" max="2000" required placeholder="e.g., 500">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="date" class="form-label">Date</label>
+                            <input type="date" class="form-control" id="date" name="date" value="{{ today }}">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="time" class="form-label">Time</label>
+                            <input type="time" class="form-control" id="time" name="time" value="{{ now }}">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="notes" class="form-label">Notes (optional)</label>
+                        <input type="text" class="form-control" id="notes" name="notes" 
+                               placeholder="e.g., After workout, With vitamins, Tea...">
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary me-md-2">Cancel</a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i>Log Water Intake
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Hydration Tips -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Hydration Tips</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-primary">Daily Tips:</h6>
+                        <ul class="list-unstyled">
+                            <li class="mb-2"><i class="fas fa-sun text-warning me-2"></i>Start your day with a glass of water</li>
+                            <li class="mb-2"><i class="fas fa-utensils text-success me-2"></i>Drink water before meals</li>
+                            <li class="mb-2"><i class="fas fa-dumbbell text-danger me-2"></i>Extra water during exercise</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-info">Benefits:</h6>
+                        <ul class="list-unstyled">
+                            <li class="mb-2"><i class="fas fa-brain text-purple me-2"></i>Better brain function</li>
+                            <li class="mb-2"><i class="fas fa-heartbeat text-danger me-2"></i>Improved circulation</li>
+                            <li class="mb-2"><i class="fas fa-leaf text-success me-2"></i>Healthier skin</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function quickLog(amount) {
+    // Use the same API as the dashboard
+    fetch('/api/quick-water', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({amount: amount})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Refresh the page to show updated progress
+            location.reload();
+        } else {
+            alert('Error logging water intake: ' + data.error);
+        }
+    })
+    .catch(error => {
+        alert('Error logging water intake: ' + error);
+    });
+}
+
+// Pre-fill common amounts
+document.addEventListener('DOMContentLoaded', function() {
+    const amountInput = document.getElementById('amount');
+    
+    // Add some common amounts as datalist
+    const datalist = document.createElement('datalist');
+    datalist.id = 'common-amounts';
+    datalist.innerHTML = `
+        <option value="200">Small glass</option>
+        <option value="250">Regular glass</option>
+        <option value="330">Can/Small bottle</option>
+        <option value="500">Water bottle</option>
+        <option value="750">Large bottle</option>
+        <option value="1000">1 Liter</option>
+    `;
+    
+    amountInput.setAttribute('list', 'common-amounts');
+    amountInput.parentNode.appendChild(datalist);
+});
+</script>
+{% endblock %}

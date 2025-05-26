@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+
+{% block title %}Settings - Health Tracker{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0"><i class="fas fa-cog me-2"></i>Application Settings</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <!-- Health Goals -->
+                    <h5 class="text-primary mb-3">
+                        <i class="fas fa-target me-2"></i>Health Goals
+                    </h5>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="daily_water_goal_ml" class="form-label">
+                                <i class="fas fa-tint me-1"></i>Daily Water Goal (ml)
+                            </label>
+                            <input type="number" class="form-control" id="daily_water_goal_ml" 
+                                   name="daily_water_goal_ml" min="500" max="5000" 
+                                   value="{{ settings.daily_water_goal_ml or 2500 }}" required>
+                            <small class="text-muted">Recommended: 2000-3000ml per day</small>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="target_sleep_hours" class="form-label">
+                                <i class="fas fa-bed me-1"></i>Target Sleep Hours
+                            </label>
+                            <input type="number" class="form-control" id="target_sleep_hours" 
+                                   name="target_sleep_hours" min="4" max="12" step="0.5"
+                                   value="{{ settings.target_sleep_hours or 8 }}" required>
+                            <small class="text-muted">Recommended: 7-9 hours per night</small>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <label for="weekly_gym_goal" class="form-label">
+                                <i class="fas fa-dumbbell me-1"></i>Weekly Gym Goal (sessions)
+                            </label>
+                            <input type="number" class="form-control" id="weekly_gym_goal" 
+                                   name="weekly_gym_goal" min="1" max="14"
+                                   value="{{ settings.weekly_gym_goal or 4 }}" required>
+                            <small class="text-muted">Recommended: 3-5 sessions per week</small>
+                        </div>
+                    </div>
+                    
+                    <!-- Financial Tracking -->
+                    <h5 class="text-warning mb-3">
+                        <i class="fas fa-dollar-sign me-2"></i>Financial Tracking
+                    </h5>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="gym_membership_cost_monthly" class="form-label">
+                                <i class="fas fa-credit-card me-1"></i>Monthly Gym Membership Cost ($)
+                            </label>
+                            <input type="number" class="form-control" id="gym_membership_cost_monthly" 
+                                   name="gym_membership_cost_monthly" min="0" max="500" step="0.01"
+                                   value="{{ settings.gym_membership_cost_monthly or 50 }}" required>
+                            <small class="text-muted">Your actual monthly gym membership fee</small>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="missed_workout_opportunity_cost" class="form-label">
+                                <i class="fas fa-exclamation-triangle me-1"></i>Missed Workout Opportunity Cost ($)
+                            </label>
+                            <input type="number" class="form-control" id="missed_workout_opportunity_cost" 
+                                   name="missed_workout_opportunity_cost" min="0" max="100" step="0.01"
+                                   value="{{ settings.missed_workout_opportunity_cost or 15 }}" required>
+                            <small class="text-muted">Estimated value of missed health/fitness benefits per session</small>
+                        </div>
+                    </div>
+                    
+                    <!-- Explanation of Opportunity Cost -->
+                    <div class="alert alert-info mb-4">
+                        <h6 class="alert-heading">
+                            <i class="fas fa-info-circle me-2"></i>About Opportunity Cost
+                        </h6>
+                        <p class="mb-0">
+                            Opportunity cost represents the value of benefits you miss when you skip a gym session. 
+                            This includes potential health improvements, stress relief, energy boost, and long-term wellness benefits. 
+                            Set this to a value that motivates you to maintain your fitness routine!
+                        </p>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary me-md-2">Cancel</a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i>Save Settings
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Tips Card -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Setting Tips</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-success">Realistic Goals:</h6>
+                        <ul class="list-unstyled">
+                            <li class="mb-1"><i class="fas fa-check text-success me-2"></i>Start with achievable targets</li>
+                            <li class="mb-1"><i class="fas fa-check text-success me-2"></i>Gradually increase as you improve</li>
+                            <li class="mb-1"><i class="fas fa-check text-success me-2"></i>Consider your current lifestyle</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-info">Motivation:</h6>
+                        <ul class="list-unstyled">
+                            <li class="mb-1"><i class="fas fa-chart-line text-info me-2"></i>Track your progress regularly</li>
+                            <li class="mb-1"><i class="fas fa-dollar-sign text-info me-2"></i>Use financial tracking as motivation</li>
+                            <li class="mb-1"><i class="fas fa-trophy text-info me-2"></i>Celebrate when you reach goals</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Current Status -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-info me-2"></i>Current Configuration</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <table class="table table-sm">
+                            <tr>
+                                <td><strong>Water Goal:</strong></td>
+                                <td>{{ settings.daily_water_goal_ml or 2500 }}ml/day</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Sleep Target:</strong></td>
+                                <td>{{ settings.target_sleep_hours or 8 }} hours/night</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Gym Goal:</strong></td>
+                                <td>{{ settings.weekly_gym_goal or 4 }} sessions/week</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <table class="table table-sm">
+                            <tr>
+                                <td><strong>Membership Cost:</strong></td>
+                                <td>${{ settings.gym_membership_cost_monthly or 50 }}/month</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Opportunity Cost:</strong></td>
+                                <td>${{ settings.missed_workout_opportunity_cost or 15 }}/session</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Daily Membership:</strong></td>
+                                <td>${{ "%.2f"|format((settings.gym_membership_cost_monthly|float or 50) / 30.44) }}/day</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Calculate daily membership cost in real-time
+document.addEventListener('DOMContentLoaded', function() {
+    const monthlyInput = document.getElementById('gym_membership_cost_monthly');
+    
+    function updateDailyCost() {
+        const monthly = parseFloat(monthlyInput.value) || 0;
+        const daily = (monthly / 30.44).toFixed(2);
+        
+        // Update the display if it exists
+        const dailyDisplay = document.querySelector('[data-daily-cost]');
+        if (dailyDisplay) {
+            dailyDisplay.textContent = `$${daily}/day`;
+        }
+    }
+    
+    monthlyInput.addEventListener('input', updateDailyCost);
+});
+</script>
+{% endblock %}

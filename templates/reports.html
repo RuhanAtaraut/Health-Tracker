@@ -1,0 +1,309 @@
+{% extends "base.html" %}
+
+{% block title %}Reports - Health Tracker{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="mb-4">
+            <i class="fas fa-chart-bar me-2"></i>Health & Fitness Reports
+        </h2>
+    </div>
+</div>
+
+<!-- Date Range Filter -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <form method="GET" class="row align-items-end">
+                    <div class="col-md-4">
+                        <label for="start_date" class="form-label">Start Date</label>
+                        <input type="date" class="form-control" id="start_date" name="start_date" value="{{ start_date }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="end_date" class="form-label">End Date</label>
+                        <input type="date" class="form-control" id="end_date" name="end_date" value="{{ end_date }}">
+                    </div>
+                    <div class="col-md-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-filter me-1"></i>Update Report
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Summary Statistics -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card stat-card h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-bed fa-2x mb-2"></i>
+                <h5>Average Sleep</h5>
+                <h3>{{ stats.avg_sleep_hours or 0 }}h</h3>
+                <small>Total: {{ stats.total_sleep_hours or 0 }}h</small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card gym-card h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-dumbbell fa-2x mb-2"></i>
+                <h5>Gym Attendance</h5>
+                <h3>{{ stats.gym_attendance_rate or 0 }}%</h3>
+                <small>{{ stats.gym_sessions_attended or 0 }} / {{ stats.total_gym_entries or 0 }} sessions</small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card opportunity-card h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
+                <h5>Missed Sessions</h5>
+                <h3>{{ opportunity_loss.missed_sessions or 0 }}</h3>
+                <small>Sessions skipped</small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card opportunity-card h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-dollar-sign fa-2x mb-2"></i>
+                <h5>Total Loss</h5>
+                <h3>${{ opportunity_loss.total_loss or 0 }}</h3>
+                <small>Financial impact</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Opportunity Loss Breakdown -->
+{% if opportunity_loss %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-calculator me-2"></i>Opportunity Loss Breakdown</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <table class="table table-sm">
+                            <tr>
+                                <td><strong>Analysis Period:</strong></td>
+                                <td>{{ opportunity_loss.days_in_range or 0 }} days</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Missed Sessions:</strong></td>
+                                <td>{{ opportunity_loss.missed_sessions or 0 }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Membership Cost (Period):</strong></td>
+                                <td>${{ opportunity_loss.membership_cost_for_period or 0 }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <table class="table table-sm">
+                            <tr>
+                                <td><strong>Opportunity Loss:</strong></td>
+                                <td>${{ opportunity_loss.opportunity_loss or 0 }}</td>
+                            </tr>
+                            <tr class="table-warning">
+                                <td><strong>Total Financial Impact:</strong></td>
+                                <td><strong>${{ opportunity_loss.total_loss or 0 }}</strong></td>
+                            </tr>
+                            <tr>
+                                <td colspan="2">
+                                    <small class="text-muted">
+                                        This includes membership fees you paid plus the estimated value of missed workout benefits.
+                                    </small>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Sleep Data Table -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-bed me-2"></i>Sleep Records</h5>
+            </div>
+            <div class="card-body">
+                {% if sleep_data %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Bedtime</th>
+                                <th>Wake Time</th>
+                                <th>Duration</th>
+                                <th>Quality</th>
+                                <th>Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for sleep in sleep_data %}
+                            <tr>
+                                <td>{{ sleep.date }}</td>
+                                <td>{{ sleep.bedtime or '-' }}</td>
+                                <td>{{ sleep.wake_time or '-' }}</td>
+                                <td>
+                                    {% if sleep.sleep_duration_hours %}
+                                        {{ "%.1f"|format(sleep.sleep_duration_hours) }}h
+                                        {% if sleep.sleep_duration_hours < 6 %}
+                                            <span class="badge bg-danger ms-1">Short</span>
+                                        {% elif sleep.sleep_duration_hours >= 7 and sleep.sleep_duration_hours <= 9 %}
+                                            <span class="badge bg-success ms-1">Optimal</span>
+                                        {% elif sleep.sleep_duration_hours > 9 %}
+                                            <span class="badge bg-warning ms-1">Long</span>
+                                        {% endif %}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if sleep.sleep_quality %}
+                                        {% for i in range(sleep.sleep_quality) %}⭐{% endfor %}
+                                        <small class="text-muted">({{ sleep.sleep_quality }}/10)</small>
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if sleep.notes %}
+                                        <span class="text-truncate" style="max-width: 200px;" title="{{ sleep.notes }}">
+                                            {{ sleep.notes[:50] }}{% if sleep.notes|length > 50 %}...{% endif %}
+                                        </span>
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">No sleep data found for this date range.</p>
+                <a href="{{ url_for('log_sleep') }}" class="btn btn-primary">Start Logging Sleep</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Gym Data Table -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-dumbbell me-2"></i>Gym Records</h5>
+            </div>
+            <div class="card-body">
+                {% if gym_data %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Attended</th>
+                                <th>Workout Type</th>
+                                <th>Duration</th>
+                                <th>Calories</th>
+                                <th>Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for gym in gym_data %}
+                            <tr class="{% if not gym.attended %}table-light{% endif %}">
+                                <td>{{ gym.date }}</td>
+                                <td>
+                                    {% if gym.attended %}
+                                        <span class="badge bg-success">✓ Yes</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">✗ Missed</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ gym.workout_type or '-' }}</td>
+                                <td>
+                                    {% if gym.duration_minutes %}
+                                        {{ gym.duration_minutes }} min
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if gym.calories_burned %}
+                                        {{ gym.calories_burned }} cal
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if gym.notes %}
+                                        <span class="text-truncate" style="max-width: 200px;" title="{{ gym.notes }}">
+                                            {{ gym.notes[:50] }}{% if gym.notes|length > 50 %}...{% endif %}
+                                        </span>
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">No gym data found for this date range.</p>
+                <a href="{{ url_for('log_gym') }}" class="btn btn-primary">Start Logging Gym Sessions</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Set date range to last 7 days, 30 days, etc.
+function setDateRange(days) {
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(endDate.getDate() - days);
+    
+    document.getElementById('end_date').value = endDate.toISOString().split('T')[0];
+    document.getElementById('start_date').value = startDate.toISOString().split('T')[0];
+}
+
+// Add quick date range buttons
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const buttonContainer = document.createElement('div');
+    buttonContainer.className = 'mt-2';
+    buttonContainer.innerHTML = `
+        <small class="text-muted">Quick ranges: </small>
+        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setDateRange(7)">7 days</button>
+        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setDateRange(30)">30 days</button>
+        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setDateRange(90)">90 days</button>
+    `;
+    
+    form.appendChild(buttonContainer);
+});
+</script>
+{% endblock %}
